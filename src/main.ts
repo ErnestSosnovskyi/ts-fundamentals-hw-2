@@ -1,13 +1,14 @@
 import { getImagesByQuery } from "./pixabay-api";
 import { initRender } from "./render-functions";
 import Pagination from "./pagination";
+import type { PixabayResponse } from "./types/pixabay";
 
 const pagination = new Pagination();
-let query = "";
-const searchForm = document.querySelector(".form");
-const loadMoreButton = document.querySelector(".load-more");
-const gallery = document.querySelector(".gallery");
-const loader = document.querySelector(".loader");
+let query: string = "";
+const searchForm = document.querySelector<HTMLFormElement>(".form");
+const loadMoreButton = document.querySelector<HTMLButtonElement>(".load-more");
+const gallery = document.querySelector<HTMLUListElement>(".gallery");
+const loader = document.querySelector<HTMLParagraphElement>(".loader");
 
 if (!searchForm) throw new Error("Missing .form element in HTML");
 if (!loadMoreButton) throw new Error("Missing .load-more element in HTML");
@@ -20,11 +21,11 @@ const ui = initRender({ gallery, loader, loadMoreButton });
 searchForm.addEventListener("submit", onFormSubmit);
 loadMoreButton.addEventListener("click", onLoadMoreClick);
 
-async function onFormSubmit(event) {
+async function onFormSubmit(event: SubmitEvent): Promise<void> {
   event.preventDefault();
-  const form = event.target;
+  const form = event.currentTarget as HTMLFormElement;
   const formData = new FormData(form);
-  query = formData.get("search-text").trim();
+  query = (formData.get("search-text") as string).trim();
 
   if (query === "") {
     ui.showToast("Please enter a search query.");
@@ -49,7 +50,7 @@ async function fetchAndRender() {
     ui.showLoader();
     ui.hideLoadMoreButton();
 
-    const data = await getImagesByQuery(query, pagination.current);
+    const data: PixabayResponse = await getImagesByQuery(query, pagination.current);
 
     if (isInitial && data.hits.length === 0) {
       ui.showToast(
